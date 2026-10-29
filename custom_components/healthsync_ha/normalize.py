@@ -1,11 +1,11 @@
-"""Vertaalt het HealthSync iOS-app formaat ({"samples":[...]}) naar het formaat van de integratie."""
+"""Translate the HealthSync iOS app payload format ({"samples":[...]}) to the flat format used by the integration."""
 from __future__ import annotations
 
 import re
 from datetime import datetime
 from typing import Any
 
-# Cumulatieve metrics: alleen daily_total-samples zijn zinvol (anders losse tussenintervallen)
+# Cumulative metrics: only daily_total samples are meaningful (others are partial intervals)
 CUMULATIVE = {
     "steps": "steps_daily_total",
     "activeCalories": "active_energy_burned_daily_total",
@@ -14,7 +14,7 @@ CUMULATIVE = {
     "flightsClimbed": "flights_climbed_daily_total",
     "exerciseTime": "exercise_time_daily_total",
 }
-# Momentmetingen
+# Point-in-time measurements
 DIRECT = {
     "heartRate": "heart_rate",
     "restingHeartRate": "resting_heart_rate",
@@ -42,7 +42,7 @@ def _parse(ts: Any):
 
 
 def normalize_sample(s: dict[str, Any]) -> list[dict[str, Any]]:
-    """Geef 0..n platte payloads terug voor één sample uit de app."""
+    """Return 0..n flat payloads for a single sample from the app."""
     metric = s.get("metric")
     if not isinstance(metric, str):
         return []
@@ -87,7 +87,7 @@ def normalize_sample(s: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def expand(payload: dict[str, Any]) -> list[dict[str, Any]] | None:
-    """Geef None terug als dit geen app-formaat is (dan oud gedrag)."""
+    """Return None if this is not the app format (caller keeps the old behaviour)."""
     samples = payload.get("samples")
     if not isinstance(samples, list):
         return None
