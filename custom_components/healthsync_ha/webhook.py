@@ -201,7 +201,7 @@ class AppleHealthManager:
         else:
             try:
                 if ts < state.last_updated:
-                    return  # ouder sample (historie) overschrijft geen nieuwere waarde
+                    return  # older (history) sample must not overwrite a newer value
             except TypeError:
                 pass
             state.value = value
